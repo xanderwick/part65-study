@@ -40,6 +40,15 @@
   }
   function pct(x) { return Math.round((x || 0) * 100); }
   function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function dayOffset(n) { return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10); }
+  function capit(s) { return String(s).charAt(0).toUpperCase() + String(s).slice(1); }
+  function fmtDur(sec) {
+    sec = Math.round(sec || 0);
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    if (h) return h + "h " + m + "m";
+    if (m) return m + "m " + (s ? s + "s" : "");
+    return s + "s";
+  }
 
   var toastTimer = null;
   function toast(msg) {
@@ -59,18 +68,67 @@
   }
 
   // Update aggregate stats + the daily study streak on each graded answer.
-  function recordAnswer(correct, seconds) {
+  // Per-question "seconds" is thinking time (feeds avg-time-per-question);
+  // wall-clock study time is accrued per session in endSession().
+  function recordAnswer(correct, seconds, domain) {
     var s = Store.load();
+    var today = todayStr();
     s.stats.totalAnswered += 1;
     if (correct) s.stats.totalCorrect += 1;
-    s.stats.studySeconds += Math.max(0, Math.round(seconds || 0));
-    var today = todayStr();
+    var secs = Math.max(0, Math.round(seconds || 0));
+    if (secs > 0) { s.stats.timedSeconds += secs; s.stats.timedCount += 1; }
+    var d = s.daily[today] || (s.daily[today] = { sec: 0, ans: 0, cor: 0 });
+    d.ans += 1; if (correct) d.cor += 1;
     if (s.stats.lastStudyDay !== today) {
       var yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
       s.stats.streakDays = s.stats.lastStudyDay === yest ? (s.stats.streakDays || 0) + 1 : 1;
       s.stats.lastStudyDay = today;
     }
+    if (sessionMeta) {
+      sessionMeta.ans += 1; if (correct) sessionMeta.cor += 1;
+      if (domain) sessionMeta.domAns[domain] = (sessionMeta.domAns[domain] || 0) + 1;
+    }
     Store.save();
+  }
+
+  // Study-session timing. studySeconds = wall-clock time inside sessions,
+  // distributed across domains by how many questions you saw in each.
+  var sessionMeta = null;
+  function startSession(mode) {
+    var s = Store.load();
+    s.stats.sessions = (s.stats.sessions || 0) + 1;
+    sessionMeta = { mode: mode, start: Date.now(), ans: 0, cor: 0, domAns: {} };
+    Store.save();
+  }
+  function noteReelView(domain) {
+    if (sessionMeta && domain) sessionMeta.domAns[domain] = (sessionMeta.domAns[domain] || 0) + 1;
+  }
+  function endSession() {
+    if (!sessionMeta) return;
+    var s = Store.load();
+    var dur = Math.round((Date.now() - sessionMeta.start) / 1000);
+    dur = Math.min(dur, 4 * 3600); // cap idle/runaway sessions
+    var hasActivity = sessionMeta.ans > 0 || Object.keys(sessionMeta.domAns).length > 0;
+    if (dur > 0 && hasActivity) {
+      s.stats.studySeconds += dur;
+      var today = todayStr();
+      var d = s.daily[today] || (s.daily[today] = { sec: 0, ans: 0, cor: 0 });
+      d.sec += dur;
+      var totalDom = 0;
+      Object.keys(sessionMeta.domAns).forEach(function (k) { totalDom += sessionMeta.domAns[k]; });
+      if (totalDom > 0) {
+        Object.keys(sessionMeta.domAns).forEach(function (k) {
+          s.domainTime[k] = (s.domainTime[k] || 0) + dur * (sessionMeta.domAns[k] / totalDom);
+        });
+      }
+      s.sessionsLog.unshift({
+        date: new Date(sessionMeta.start).toISOString(),
+        mode: sessionMeta.mode, sec: dur, ans: sessionMeta.ans, cor: sessionMeta.cor
+      });
+      s.sessionsLog = s.sessionsLog.slice(0, 60);
+    }
+    sessionMeta = null;
+    Store.saveNow();
   }
 
   function updateReadinessChip() {
@@ -83,11 +141,13 @@
 
   var VIEWS = {
     dashboard: renderDashboard,
+    reels: renderReelsStart,
     adaptive: renderAdaptiveStart,
     drill: renderDrillStart,
     mock: renderMockStart,
     flash: renderFlashStart,
     notes: renderNotes,
+    time: renderTime,
     progress: renderProgress,
     settings: renderSettings
   };
@@ -166,10 +226,12 @@
       '<div class="card fade-in">' +
         '<div class="section-title"><h2>Jump in</h2></div>' +
         '<div class="grid-2">' +
+          '<button class="btn block" data-jump="reels">📱 Reels (quick study)</button>' +
           '<button class="btn block" data-jump="adaptive">🎯 Adaptive Quiz</button>' +
           '<button class="btn block" data-jump="mock">📝 Full Mock Exam</button>' +
           '<button class="btn block" data-jump="drill">🧩 Topic Drills</button>' +
           '<button class="btn block" data-jump="flash">⚡ Flashcards</button>' +
+          '<button class="btn block" data-jump="time">⏱ Study Time</button>' +
         '</div>' +
       '</div>';
 
@@ -290,6 +352,7 @@
       startTime: Date.now()
     };
     cfg.questions.forEach(function (q) { sessionSeen.add(q.id); });
+    startSession(cfg.mode);
     attachKeys();
     renderQuestion();
   }
@@ -354,7 +417,7 @@
       var correct = idx === q.answer;
       var secs = (Date.now() - quiz.qStart) / 1000;
       SRS.grade(q.id, correct, Date.now() - quiz.qStart);
-      recordAnswer(correct, secs);
+      recordAnswer(correct, secs, q.domain);
       lockAndReveal(idx);
       updateReadinessChip();
     } else {
@@ -420,6 +483,7 @@
     }
     stopMockTimer();
     detachKeys();
+    endSession();
     quiz = null;
     go("dashboard");
   }
@@ -428,7 +492,8 @@
     stopMockTimer();
     detachKeys();
     var c = quiz.cfg;
-    if (c.mode === "mock") return finishMock();
+    if (c.mode === "mock") { finishMock(); endSession(); return; }
+    endSession();
     // Adaptive / drill summary.
     var total = quiz.qs.length;
     var correct = 0;
@@ -498,7 +563,7 @@
       // Feed every mock answer into the SRS so it informs adaptive scheduling.
       // Unanswered questions count as incorrect.
       SRS.grade(q.id, ok, 0);
-      recordAnswer(ok, 0);
+      recordAnswer(ok, 0, q.domain);
       if (ok) correct++;
       byDomain[q.domain].t++;
       if (ok) byDomain[q.domain].c++;
@@ -664,7 +729,8 @@
     document.getElementById("startFlash").onclick = function () {
       var qs = pickSession({ count: 25 });
       qs.forEach(function (q) { sessionSeen.add(q.id); });
-      flash = { qs: qs, i: 0, flipped: false, start: Date.now() };
+      flash = { qs: qs, i: 0, flipped: false, start: Date.now(), cardStart: Date.now() };
+      startSession("flash");
       attachKeys();
       renderFlash();
     };
@@ -673,6 +739,7 @@
   function renderFlash() {
     if (flash.i >= flash.qs.length) {
       detachKeys();
+      endSession();
       view.innerHTML = '<div class="card fade-in"><div class="result-hero"><div class="big pass">✓</div>' +
         '<div class="verdict">Flashcard set complete</div>' +
         '<div class="subtle" style="margin-top:6px">Readiness now ' + pct(SRS.analyze(BANK).readiness) + '%.</div></div>' +
@@ -703,7 +770,7 @@
     document.getElementById("flashCard").onclick = function () {
       if (!flash.flipped) { flash.flipped = true; renderFlash(); }
     };
-    document.getElementById("flashQuit").onclick = function () { detachKeys(); go("dashboard"); };
+    document.getElementById("flashQuit").onclick = function () { detachKeys(); endSession(); go("dashboard"); };
     if (flash.flipped) {
       document.getElementById("fHard").onclick = function () { gradeFlash(false); };
       document.getElementById("fEasy").onclick = function () { gradeFlash(true); };
@@ -712,10 +779,12 @@
 
   function gradeFlash(correct) {
     var q = flash.qs[flash.i];
+    var secs = (Date.now() - (flash.cardStart || Date.now())) / 1000;
     SRS.grade(q.id, correct, 0);
-    recordAnswer(correct, 0);
+    recordAnswer(correct, secs, q.domain);
     flash.i++;
     flash.flipped = false;
+    flash.cardStart = Date.now();
     updateReadinessChip();
     renderFlash();
   }
@@ -834,6 +903,239 @@
         Store.resetAll(); sessionSeen = new Set(); toast("Progress reset"); updateReadinessChip(); go("dashboard");
       }
     };
+  }
+
+  /* ------------------------- TIME DASHBOARD ------------------------- */
+
+  function renderTime() {
+    var s = Store.load();
+    var totalSec = s.stats.studySeconds || 0;
+    var today = todayStr();
+    var todaySec = (s.daily[today] && s.daily[today].sec) || 0;
+    var weekSec = 0;
+    for (var i = 0; i < 7; i++) { var day = dayOffset(-i); if (s.daily[day]) weekSec += s.daily[day].sec || 0; }
+    var avgQ = s.stats.timedCount ? s.stats.timedSeconds / s.stats.timedCount : 0;
+
+    var stats = '<div class="grid-3 fade-in">' +
+      statCard(fmtDur(totalSec), "Total time", "") +
+      statCard(fmtDur(todaySec), "Today", todaySec ? "good" : "") +
+      statCard(fmtDur(weekSec), "Last 7 days", "") +
+      statCard(String(s.stats.sessions || 0), "Sessions", "") +
+      statCard(avgQ ? avgQ.toFixed(1) + "s" : "—", "Avg / question", "") +
+      statCard("🔥 " + (s.stats.streakDays || 0), "Day streak", s.stats.streakDays ? "warn" : "") +
+      '</div>';
+
+    var maxDT = Math.max(1, s.domainTime[1] || 0, s.domainTime[2] || 0, s.domainTime[3] || 0, s.domainTime[4] || 0);
+    var domTime = [1, 2, 3, 4].map(function (d) {
+      var t = s.domainTime[d] || 0;
+      return '<div class="meter-row"><div class="meter-head"><span class="name">' + DOMAIN_NAMES[d] +
+        '</span><span class="val">' + fmtDur(t) + '</span></div>' +
+        '<div class="bar"><span style="width:' + Math.round(t / maxDT * 100) + '%;background:var(--accent)"></span></div></div>';
+    }).join("");
+
+    var icons = { adaptive: "🎯", drill: "🧩", mock: "📝", flash: "⚡", reels: "📱" };
+    var log = (s.sessionsLog && s.sessionsLog.length) ? s.sessionsLog.slice(0, 20).map(function (x) {
+      var acc = x.ans ? Math.round(x.cor / x.ans * 100) + "%" : "—";
+      return '<div class="list-row"><span>' + (icons[x.mode] || "•") + " " + capit(x.mode) + ' · ' +
+        new Date(x.date).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) + '</span>' +
+        '<span class="tag">' + fmtDur(x.sec) + (x.ans ? ' · ' + x.ans + 'q · ' + acc : '') + '</span></div>';
+    }).join("") : '<div class="empty">No sessions logged yet. Study a bit and your time breakdown shows up here.</div>';
+
+    var html = '<div>' +
+      '<div class="section-title"><h2>Study time</h2><span class="faint">where your minutes go</span></div>' +
+      stats +
+      '<div class="card fade-in"><div class="section-title"><h2>Daily activity</h2><span class="faint">last 12 weeks</span></div>' + buildHeatmap(s.daily) + '</div>' +
+      '<div class="card fade-in"><div class="section-title"><h2>Time by domain</h2><span class="faint">weighted to where you study</span></div>' + domTime + '</div>' +
+      '<div class="card fade-in"><div class="section-title"><h2>Recent sessions</h2></div>' + log + '</div>' +
+      '</div>';
+    view.appendChild(el(html));
+  }
+
+  function buildHeatmap(daily) {
+    var cells = "";
+    for (var i = 83; i >= 0; i--) {
+      var day = dayOffset(-i);
+      var sec = (daily[day] && daily[day].sec) || 0;
+      var lvl = sec === 0 ? 0 : sec < 300 ? 1 : sec < 900 ? 2 : sec < 1800 ? 3 : 4;
+      cells += '<div class="hm hm-' + lvl + '" title="' + day + (sec ? " — " + fmtDur(sec) : " — no study") + '"></div>';
+    }
+    return '<div class="heatmap">' + cells + '</div>' +
+      '<div class="heat-legend"><span class="faint">Less</span>' +
+      '<span class="hm hm-0"></span><span class="hm hm-1"></span><span class="hm hm-2"></span><span class="hm hm-3"></span><span class="hm hm-4"></span>' +
+      '<span class="faint">More</span></div>';
+  }
+
+  /* ----------------------------- REELS ----------------------------- */
+  /* Full-screen, swipeable micro-learning feed. Concept cards (from the
+   * cheat sheets) are interleaved with quick adaptive MCQs. Uses native
+   * CSS scroll-snap for the swipe feel; works offline on touch + keyboard. */
+
+  var reels = null;
+
+  function renderReelsStart() {
+    var html = '<div class="card fade-in">' +
+      '<div class="section-title"><h2>Reels</h2><span class="faint">bite-size · swipe to learn</span></div>' +
+      '<p class="subtle">A full-screen feed for quick, low-friction studying. Swipe up (or press <span class="kbd">↓</span>) for the next card. Punchy <b>concept cards</b> are mixed with <b>quick questions</b> that still feed your adaptive schedule and time tracking — perfect for a few spare minutes.</p>' +
+      '<button class="btn primary block" id="startReels">▶ Start Reels</button>' +
+      '<div class="faint" style="margin-top:8px">On a phone: swipe up to advance, tap a choice to answer. On desktop: <span class="kbd">↓</span>/<span class="kbd">↑</span> and <span class="kbd">1</span>–<span class="kbd">4</span>.</div>' +
+      '</div>';
+    view.appendChild(el(html));
+    document.getElementById("startReels").onclick = openReels;
+  }
+
+  function reelDomain(item) { return item.type === "mcq" ? item.q.domain : item.domain; }
+
+  function buildReelFeed() {
+    var concepts = [];
+    NOTES.forEach(function (dom) {
+      (dom.sections || []).forEach(function (sec) {
+        (sec.points || []).forEach(function (p) {
+          concepts.push({ type: "concept", domain: dom.domain, topic: sec.h, text: p });
+        });
+      });
+    });
+    SRS.shuffle(concepts);
+    var mcqs = pickSession({ count: 12 });
+    mcqs.forEach(function (q) { sessionSeen.add(q.id); });
+    var feed = [], ci = 0, mi = 0;
+    while ((ci < concepts.length || mi < mcqs.length) && feed.length < 42) {
+      if (ci < concepts.length) feed.push(concepts[ci++]);
+      if (ci < concepts.length) feed.push(concepts[ci++]);
+      if (mi < mcqs.length) feed.push({ type: "mcq", q: mcqs[mi++] });
+    }
+    return feed;
+  }
+
+  function reelCardHtml(item, i) {
+    if (item.type === "mcq") {
+      var q = item.q;
+      var choices = q.choices.map(function (ch, idx) {
+        return '<button class="reel-choice" data-i="' + i + '" data-idx="' + idx + '">' +
+          '<span class="key">' + "ABCD"[idx] + '</span><span>' + esc(ch) + '</span></button>';
+      }).join("");
+      return '<section class="reel reel-mcq d' + q.domain + '" data-i="' + i + '">' +
+        '<div class="reel-inner">' +
+          '<div class="reel-chip">D' + q.domain + ' · ' + esc(q.topic) + '</div>' +
+          '<div class="reel-q">' + esc(q.question) + '</div>' +
+          '<div class="reel-choices">' + choices + '</div>' +
+          '<div class="reel-explain" id="reelExp-' + i + '"></div>' +
+        '</div></section>';
+    }
+    return '<section class="reel reel-concept d' + item.domain + '" data-i="' + i + '">' +
+      '<div class="reel-inner">' +
+        '<div class="reel-chip">' + DOMAIN_NAMES[item.domain].split(" ")[0] + ' · ' + esc(item.topic) + '</div>' +
+        '<div class="reel-concept-text">' + esc(item.text) + '</div>' +
+        '<div class="reel-tag">💡 concept</div>' +
+      '</div></section>';
+  }
+
+  function openReels() {
+    var feed = buildReelFeed();
+    if (!feed.length) { toast("No reel content available yet."); return; }
+    startSession("reels");
+    reels = { feed: feed, answered: {}, active: -1, activeStart: Date.now(), io: null };
+
+    var overlay = document.createElement("div");
+    overlay.className = "reels-overlay";
+    overlay.id = "reelsOverlay";
+    overlay.innerHTML =
+      '<div class="reels-top"><div class="reels-count" id="reelCount">1 / ' + feed.length + '</div>' +
+        '<button class="reels-close" id="reelClose" aria-label="Close">✕</button></div>' +
+      '<div class="reels-scroll" id="reelScroll">' + feed.map(reelCardHtml).join("") + '</div>' +
+      '<div class="reels-hint" id="reelHint">▲ swipe up for next</div>';
+    document.body.appendChild(overlay);
+    document.body.classList.add("reels-open");
+
+    var scroll = document.getElementById("reelScroll");
+    scroll.addEventListener("click", onReelClick);
+    document.getElementById("reelClose").onclick = closeReels;
+    document.addEventListener("keydown", reelKeys);
+
+    if ("IntersectionObserver" in window) {
+      reels.io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting && en.intersectionRatio >= 0.6) {
+            setActiveReel(parseInt(en.target.dataset.i, 10));
+          }
+        });
+      }, { root: scroll, threshold: [0.6] });
+      scroll.querySelectorAll(".reel").forEach(function (sec) { reels.io.observe(sec); });
+    }
+    setActiveReel(0);
+  }
+
+  function setActiveReel(i) {
+    if (!reels || reels.active === i) return;
+    reels.active = i;
+    reels.activeStart = Date.now();
+    noteReelView(reelDomain(reels.feed[i]));
+    var cnt = document.getElementById("reelCount");
+    if (cnt) cnt.textContent = (i + 1) + " / " + reels.feed.length;
+    var hint = document.getElementById("reelHint");
+    if (hint) hint.style.opacity = i === 0 ? "1" : "0";
+  }
+
+  function onReelClick(e) {
+    var ch = e.target.closest(".reel-choice");
+    if (ch) answerReel(parseInt(ch.dataset.i, 10), parseInt(ch.dataset.idx, 10));
+  }
+
+  function answerReel(i, idx) {
+    if (!reels || reels.answered[i] != null) return;
+    var item = reels.feed[i];
+    if (!item || item.type !== "mcq") return;
+    var q = item.q;
+    reels.answered[i] = idx;
+    var correct = idx === q.answer;
+    var secs = reels.activeStart ? (Date.now() - reels.activeStart) : 0;
+    SRS.grade(q.id, correct, secs);
+    recordAnswer(correct, 0, q.domain); // wall-clock session time covers reels
+    updateReadinessChip();
+
+    var section = document.querySelector('#reelScroll .reel[data-i="' + i + '"]');
+    if (!section) return;
+    section.querySelectorAll(".reel-choice").forEach(function (b, bi) {
+      b.classList.add("locked");
+      if (bi === q.answer) b.classList.add("correct");
+      else if (bi === idx) b.classList.add("wrong");
+      else b.classList.add("dim");
+    });
+    var exp = document.getElementById("reelExp-" + i);
+    if (exp) {
+      exp.innerHTML = '<div class="verdict ' + (correct ? "ok" : "no") + '">' + (correct ? "✓ Correct" : "✗ Incorrect") + '</div>' +
+        '<div>' + esc(q.explanation) + '</div>';
+      exp.classList.add("show");
+    }
+  }
+
+  function scrollToReel(i) {
+    if (!reels) return;
+    i = Math.max(0, Math.min(reels.feed.length - 1, i));
+    var target = document.querySelector('#reelScroll .reel[data-i="' + i + '"]');
+    if (target) target.scrollIntoView({ behavior: "smooth" });
+  }
+
+  function reelKeys(e) {
+    if (!reels) return;
+    if (e.key === "Escape") { e.preventDefault(); closeReels(); return; }
+    if (e.key === "ArrowDown" || e.key === " ") { e.preventDefault(); scrollToReel(reels.active + 1); return; }
+    if (e.key === "ArrowUp") { e.preventDefault(); scrollToReel(reels.active - 1); return; }
+    if (e.key >= "1" && e.key <= "4") {
+      var item = reels.feed[reels.active];
+      if (item && item.type === "mcq") { e.preventDefault(); answerReel(reels.active, parseInt(e.key, 10) - 1); }
+    }
+  }
+
+  function closeReels() {
+    if (reels && reels.io) reels.io.disconnect();
+    document.removeEventListener("keydown", reelKeys);
+    var ov = document.getElementById("reelsOverlay");
+    if (ov) ov.remove();
+    document.body.classList.remove("reels-open");
+    reels = null;
+    endSession();
+    updateReadinessChip();
+    go("dashboard");
   }
 
   /* -------------------------- KEYBOARD -------------------------- */

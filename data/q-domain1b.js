@@ -473,11 +473,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "Two assets that are perfectly negatively correlated (correlation of -1.0) are combined in a portfolio. What is the primary diversification benefit?",
     choices: [
       "Returns are maximized while expected return is unchanged",
-      "Portfolio volatility can theoretically be reduced to or near zero",
       "Both assets always move in the same direction, reducing risk",
-      "Diversification provides no benefit at this correlation"
+      "Diversification provides no benefit at this correlation",
+      "Portfolio volatility can theoretically be reduced to or near zero"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "Perfectly negatively correlated assets move in opposite directions, so their offsetting movements can reduce portfolio volatility toward zero, the greatest possible diversification benefit. Correlation of -1.0 does not mean the assets move together; that would be +1.0, which offers no diversification."
   },
   {
@@ -505,11 +505,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "An investment's after-tax return is calculated by:",
     choices: [
       "Multiplying the nominal return by the tax rate",
-      "Multiplying the nominal return by (1 minus the tax rate)",
       "Subtracting the inflation rate from the nominal return",
-      "Dividing the nominal return by (1 plus the tax rate)"
+      "Dividing the nominal return by (1 plus the tax rate)",
+      "Multiplying the nominal return by (1 minus the tax rate)"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "After-tax return equals the nominal return multiplied by (1 minus the investor's tax rate), reflecting the portion kept after taxes. Subtracting inflation instead yields the real (inflation-adjusted) return, a different adjustment."
   },
   {
@@ -553,11 +553,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "A recession is most commonly defined as:",
     choices: [
       "Any single quarter of negative GDP growth",
-      "Two or more consecutive quarters of declining real GDP",
       "A period when inflation exceeds 5%",
+      "Two or more consecutive quarters of declining real GDP",
       "A decline in the stock market of at least 20%"
     ],
-    answer: 1,
+    answer: 2,
     explanation: "The conventional definition of a recession is two or more consecutive quarters of declining real GDP, reflecting a sustained contraction in economic output. A 20% market decline describes a bear market, which is a financial rather than economic-output measure."
   },
   {
@@ -585,11 +585,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "Which combination correctly distinguishes monetary policy from fiscal policy?",
     choices: [
       "Monetary policy is set by Congress; fiscal policy is set by the Federal Reserve",
-      "Monetary policy controls money supply and interest rates via the Fed; fiscal policy controls government spending and taxation via Congress",
       "Both are controlled exclusively by the Federal Reserve",
-      "Fiscal policy adjusts the discount rate; monetary policy adjusts tax brackets"
+      "Fiscal policy adjusts the discount rate; monetary policy adjusts tax brackets",
+      "Monetary policy controls money supply and interest rates via the Fed; fiscal policy controls government spending and taxation via Congress"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "Monetary policy is conducted by the Federal Reserve through tools affecting the money supply and interest rates, while fiscal policy is enacted by Congress and the President through spending and taxation. The two are run by different bodies with different tools."
   },
   {
@@ -601,11 +601,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "An inverted yield curve, where short-term Treasury yields exceed long-term yields, is often interpreted as a signal of:",
     choices: [
       "Strong, accelerating economic growth",
-      "A potential upcoming economic slowdown or recession",
       "Rising long-term inflation expectations",
-      "An immediate increase in corporate earnings"
+      "An immediate increase in corporate earnings",
+      "A potential upcoming economic slowdown or recession"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "An inverted yield curve has historically preceded recessions, as investors accept lower long-term yields expecting weaker growth and future rate cuts. A normal, upward-sloping curve is the one typically associated with healthy growth expectations."
   },
   {
@@ -617,11 +617,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "The Consumer Price Index (CPI) is primarily used to measure:",
     choices: [
       "The total output of the economy",
-      "The rate of inflation faced by consumers",
       "The unemployment rate",
-      "Corporate profit growth"
+      "Corporate profit growth",
+      "The rate of inflation faced by consumers"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "The CPI tracks the change in prices of a basket of consumer goods and services and is the most widely cited gauge of consumer inflation. Total economic output is measured by GDP, a separate indicator."
   },
   {
@@ -649,11 +649,11 @@ window.QUESTION_BANK = (window.QUESTION_BANK || []).concat([
     question: "Stagflation presents a difficult policy challenge because it combines:",
     choices: [
       "Falling prices with rapid economic growth",
-      "High inflation with stagnant growth and high unemployment",
       "Low inflation with full employment",
-      "Rising GDP with declining interest rates"
+      "Rising GDP with declining interest rates",
+      "High inflation with stagnant growth and high unemployment"
     ],
-    answer: 1,
+    answer: 3,
     explanation: "Stagflation is the simultaneous occurrence of high inflation, stagnant economic growth, and high unemployment, which is difficult because tools that fight inflation tend to worsen unemployment. Falling prices instead describe deflation, a different condition."
   }
 ]);

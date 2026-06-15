@@ -26,8 +26,16 @@
         sessions: 0,
         lastStudyDay: null, // YYYY-MM-DD
         streakDays: 0,
-        studySeconds: 0
+        studySeconds: 0,   // wall-clock time inside study sessions
+        timedSeconds: 0,   // summed per-question thinking time (for avg/question)
+        timedCount: 0
       },
+      // Per-day activity: "YYYY-MM-DD" -> { sec, ans, cor }. Powers the heatmap.
+      daily: {},
+      // Wall-clock seconds spent per domain (1-4). Powers "time by domain".
+      domainTime: { 1: 0, 2: 0, 3: 0, 4: 0 },
+      // Recent study sessions: [{ date, mode, sec, ans, cor }] (capped).
+      sessionsLog: [],
       // Completed mock exams: [{ date, score, correct, total, durationSec, byDomain }]
       mocks: [],
       // User settings.
@@ -39,6 +47,29 @@
       // Sync bookkeeping (for the "online" features).
       sync: { lastBackup: null, lastImport: null }
     };
+  }
+
+  // Bring an older saved/seed state up to the current shape without losing data.
+  // New fields are added; legacy single-number time is backfilled into the
+  // daily log so the time dashboard is meaningful from the first load.
+  function migrate(st) {
+    if (!st.stats) st.stats = freshState().stats;
+    if (st.stats.timedSeconds == null) st.stats.timedSeconds = st.stats.studySeconds || 0;
+    if (st.stats.timedCount == null) st.stats.timedCount = st.stats.totalAnswered || 0;
+    if (!st.domainTime) st.domainTime = { 1: 0, 2: 0, 3: 0, 4: 0 };
+    if (!st.sessionsLog) st.sessionsLog = [];
+    var hasDaily = st.daily && Object.keys(st.daily).length > 0;
+    if (!st.daily) st.daily = {};
+    // Backfill: attribute legacy study time/answers to the last study day so
+    // the time dashboard isn't empty when upgrading from a pre-daily state.
+    if (!hasDaily && st.stats.lastStudyDay && (st.stats.studySeconds || st.stats.totalAnswered)) {
+      st.daily[st.stats.lastStudyDay] = {
+        sec: st.stats.studySeconds || 0,
+        ans: st.stats.totalAnswered || 0,
+        cor: st.stats.totalCorrect || 0
+      };
+    }
+    return st;
   }
 
   var state = null;
@@ -54,6 +85,7 @@
         if (!state.settings) state.settings = freshState().settings;
         if (!state.sync) state.sync = { lastBackup: null, lastImport: null };
         if (!state.mocks) state.mocks = [];
+        migrate(state);
         return state;
       }
     } catch (e) {
@@ -73,6 +105,7 @@
         state.settings = Object.assign(base.settings, seed.settings || {});
         state.sync = Object.assign(base.sync, seed.sync || {});
         state.seededFrom = seed.deviceId || true;
+        migrate(state);
         saveNow();
         return state;
       } catch (e2) {
@@ -141,6 +174,26 @@
     cur.stats.totalCorrect = Math.max(cur.stats.totalCorrect, incoming.stats.totalCorrect || 0);
     cur.stats.studySeconds = Math.max(cur.stats.studySeconds, incoming.stats.studySeconds || 0);
     cur.stats.streakDays = Math.max(cur.stats.streakDays, incoming.stats.streakDays || 0);
+    cur.stats.sessions = Math.max(cur.stats.sessions || 0, incoming.stats.sessions || 0);
+    cur.stats.timedSeconds = Math.max(cur.stats.timedSeconds || 0, incoming.stats.timedSeconds || 0);
+    cur.stats.timedCount = Math.max(cur.stats.timedCount || 0, incoming.stats.timedCount || 0);
+    // Daily activity: keep the larger record per day (idempotent on re-import).
+    var inDaily = incoming.daily || {};
+    Object.keys(inDaily).forEach(function (day) {
+      var a = cur.daily[day], b = inDaily[day];
+      if (!a || (b.sec || 0) > (a.sec || 0)) cur.daily[day] = b;
+    });
+    // Per-domain time: take the max per domain.
+    var inDT = incoming.domainTime || {};
+    [1, 2, 3, 4].forEach(function (d) {
+      cur.domainTime[d] = Math.max(cur.domainTime[d] || 0, inDT[d] || 0);
+    });
+    // Session log: merge and de-dupe by date, keep most recent 60.
+    var seenSess = {};
+    cur.sessionsLog.forEach(function (x) { seenSess[x.date] = true; });
+    (incoming.sessionsLog || []).forEach(function (x) { if (!seenSess[x.date]) cur.sessionsLog.push(x); });
+    cur.sessionsLog.sort(function (x, y) { return new Date(y.date) - new Date(x.date); });
+    cur.sessionsLog = cur.sessionsLog.slice(0, 60);
     // Merge mock history, de-duped by date.
     var seenDates = {};
     cur.mocks.forEach(function (m) { seenDates[m.date] = true; });
