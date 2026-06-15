@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="description" content="Adaptive study app for the Series 65 (NASAA Uniform Investment Adviser Law Exam). Spaced repetition, weak-area targeting, full mock exams, and a readiness predictor — 100% offline." />
+  <meta name="theme-color" content="#0f1419" />
+  <title>Series 65 — Adaptive Study</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="brand"><span class="dot">●</span> Series&nbsp;65 <span class="subtle" style="font-weight:600">Adaptive</span></div>
+      <div class="header-spacer"></div>
+      <div class="readiness-chip" id="readinessChip">Readiness <b>—</b></div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button data-view="dashboard" class="active">Dashboard</button>
+      <button data-view="adaptive">Adaptive Quiz</button>
+      <button data-view="drill">Topic Drills</button>
+      <button data-view="mock">Mock Exam</button>
+      <button data-view="flash">Flashcards</button>
+      <button data-view="notes">Cheat Sheets</button>
+      <button data-view="progress">Progress</button>
+      <button data-view="settings">Settings</button>
+    </nav>
+  </header>
+
+  <main id="view"><!-- views render here --></main>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Data (self-registering globals) -->
+  <script src="data/q-domain1.js"></script>
+  <script src="data/q-domain2.js"></script>
+  <script src="data/q-domain3.js"></script>
+  <script src="data/q-domain4.js"></script>
+  <script src="data/notes.js"></script>
+
+  <!-- Engine -->
+  <script src="js/storage.js"></script>
+  <script src="js/srs.js"></script>
+
+  <!-- App controller -->
+  <script src="js/app.js"></script>
+</body>
+</html>
