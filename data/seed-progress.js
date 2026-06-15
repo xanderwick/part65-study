@@ -1,0 +1,117 @@
+/* seed-progress.js — Optional starter progress snapshot.
+ *
+ * The live app stores progress in this browser's localStorage. When you open
+ * the deployed site for the first time, that storage is empty — so this file
+ * lets the app initialize from a prior backup (your first study session) so
+ * your completed questions, accuracy, streak, and study time show up right away.
+ *
+ * Behavior (see js/storage.js): this seed is used ONLY when no saved state
+ * exists yet in the browser. Once you've studied on a device, your real local
+ * progress always takes precedence and this is never applied again.
+ */
+window.SEED_STATE = {
+  "schema": 1,
+  "createdAt": 1781510905515,
+  "updatedAt": 1781512152709,
+  "deviceId": "dev-pxct5l47",
+  "cards": {
+    "D4-035": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781510926807, "nextDue": 1781597326807, "lastMs": 13207 },
+    "D4-002": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781510982537, "nextDue": 1781597382537, "lastMs": 47818 },
+    "D3-004": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781510995265, "nextDue": 1781597395265, "lastMs": 6480 },
+    "D4-022": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511011785, "nextDue": 1781597411785, "lastMs": 12615 },
+    "D3-009": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511050708, "nextDue": 1781511110708, "lastMs": 35455 },
+    "D4-020": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511065211, "nextDue": 1781597465211, "lastMs": 7801 },
+    "D4-010": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511077295, "nextDue": 1781597477295, "lastMs": 6434 },
+    "D3-042": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511139442, "nextDue": 1781597539442, "lastMs": 57514 },
+    "D4-013": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511151069, "nextDue": 1781597551069, "lastMs": 7827 },
+    "D4-018": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511180822, "nextDue": 1781511240822, "lastMs": 21815 },
+    "D3-035": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511194307, "nextDue": 1781597594307, "lastMs": 3790 },
+    "D3-021": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511204070, "nextDue": 1781597604070, "lastMs": 6613 },
+    "D4-042": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511217772, "nextDue": 1781597617772, "lastMs": 8814 },
+    "D3-008": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511228774, "nextDue": 1781511288774, "lastMs": 8450 },
+    "D4-037": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511250073, "nextDue": 1781511310073, "lastMs": 11763 },
+    "D3-024": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511269263, "nextDue": 1781597669263, "lastMs": 11270 },
+    "D4-050": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511279762, "nextDue": 1781597679762, "lastMs": 8886 },
+    "D3-029": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511288492, "nextDue": 1781597688492, "lastMs": 5764 },
+    "D3-014": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511299576, "nextDue": 1781597699576, "lastMs": 6314 },
+    "D4-009": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511318131, "nextDue": 1781597718131, "lastMs": 16723 },
+    "D3-011": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511348714, "nextDue": 1781597748714, "lastMs": 20044 },
+    "D3-013": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511358046, "nextDue": 1781511418046, "lastMs": 6212 },
+    "D3-049": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511368215, "nextDue": 1781597768215, "lastMs": 6649 },
+    "D3-007": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511384716, "nextDue": 1781511444716, "lastMs": 14814 },
+    "D3-048": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511394539, "nextDue": 1781597794539, "lastMs": 6848 },
+    "D4-030": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511399539, "nextDue": 1781597799539, "lastMs": 3617 },
+    "D4-032": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511405508, "nextDue": 1781597805508, "lastMs": 4583 },
+    "D4-017": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511411860, "nextDue": 1781511471860, "lastMs": 4919 },
+    "D4-019": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511423992, "nextDue": 1781597823992, "lastMs": 7080 },
+    "D3-052": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511437279, "nextDue": 1781597837279, "lastMs": 11931 },
+    "D4-026": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511447231, "nextDue": 1781597847231, "lastMs": 8380 },
+    "D3-010": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511454165, "nextDue": 1781597854165, "lastMs": 3899 },
+    "D3-037": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511462146, "nextDue": 1781597862146, "lastMs": 5116 },
+    "D4-038": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511470080, "nextDue": 1781597870080, "lastMs": 6596 },
+    "D3-012": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511476662, "nextDue": 1781597876662, "lastMs": 5166 },
+    "D4-033": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511497551, "nextDue": 1781597897551, "lastMs": 16552 },
+    "D4-028": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511518115, "nextDue": 1781597918115, "lastMs": 12199 },
+    "D3-047": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511527483, "nextDue": 1781597927483, "lastMs": 7085 },
+    "D4-052": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511536500, "nextDue": 1781597936500, "lastMs": 6698 },
+    "D4-049": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511544504, "nextDue": 1781597944504, "lastMs": 5717 },
+    "D4-004": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511714961, "nextDue": 1781598114961, "lastMs": 141796 },
+    "D2-025": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511723110, "nextDue": 1781598123110, "lastMs": 4582 },
+    "D2-001": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511732995, "nextDue": 1781511792995, "lastMs": 5948 },
+    "D2-006": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511744129, "nextDue": 1781598144129, "lastMs": 5304 },
+    "D2-026": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511762714, "nextDue": 1781598162714, "lastMs": 16236 },
+    "D4-043": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511774030, "nextDue": 1781598174030, "lastMs": 9716 },
+    "D2-036": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511782734, "nextDue": 1781598182734, "lastMs": 4939 },
+    "D3-001": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511801197, "nextDue": 1781598201197, "lastMs": 14946 },
+    "D2-012": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511808898, "nextDue": 1781598208898, "lastMs": 5866 },
+    "D2-005": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511814219, "nextDue": 1781511874219, "lastMs": 3355 },
+    "D2-002": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511824463, "nextDue": 1781598224463, "lastMs": 5809 },
+    "D2-004": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511833897, "nextDue": 1781511893897, "lastMs": 7863 },
+    "D2-015": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511850487, "nextDue": 1781511910487, "lastMs": 9850 },
+    "D3-030": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781511863132, "nextDue": 1781511923132, "lastMs": 6847 },
+    "D2-028": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511877669, "nextDue": 1781598277669, "lastMs": 10681 },
+    "D2-024": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511888234, "nextDue": 1781598288234, "lastMs": 8848 },
+    "D3-015": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511901705, "nextDue": 1781598301705, "lastMs": 10301 },
+    "D2-040": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511915604, "nextDue": 1781598315604, "lastMs": 11751 },
+    "D4-046": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511932982, "nextDue": 1781598332982, "lastMs": 15379 },
+    "D3-025": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511944233, "nextDue": 1781598344233, "lastMs": 9449 },
+    "D3-028": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511955988, "nextDue": 1781598355988, "lastMs": 7846 },
+    "D3-032": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511961388, "nextDue": 1781598361388, "lastMs": 4199 },
+    "D2-030": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511966822, "nextDue": 1781598366822, "lastMs": 4084 },
+    "D4-036": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511970488, "nextDue": 1781598370488, "lastMs": 3095 },
+    "D3-038": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511983036, "nextDue": 1781598383036, "lastMs": 11415 },
+    "D2-042": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511992823, "nextDue": 1781598392823, "lastMs": 3448 },
+    "D3-045": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781511997038, "nextDue": 1781598397038, "lastMs": 2981 },
+    "D2-031": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512006057, "nextDue": 1781598406057, "lastMs": 7764 },
+    "D4-016": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781512015291, "nextDue": 1781512075291, "lastMs": 7219 },
+    "D3-043": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512049691, "nextDue": 1781598449691, "lastMs": 30665 },
+    "D3-046": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512053921, "nextDue": 1781598453921, "lastMs": 3097 },
+    "D2-043": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512061011, "nextDue": 1781598461011, "lastMs": 5072 },
+    "D4-024": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512070727, "nextDue": 1781598470727, "lastMs": 8669 },
+    "D4-040": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512082694, "nextDue": 1781598482694, "lastMs": 7198 },
+    "D3-031": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512088494, "nextDue": 1781598488494, "lastMs": 4215 },
+    "D3-003": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512096193, "nextDue": 1781598496193, "lastMs": 6749 },
+    "D2-032": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512106993, "nextDue": 1781598506993, "lastMs": 8817 },
+    "D4-005": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781512113092, "nextDue": 1781512173092, "lastMs": 4848 },
+    "D4-015": { "box": 0, "streak": 0, "lapses": 1, "seen": 1, "correct": 0, "lastSeen": 1781512130394, "nextDue": 1781512190394, "lastMs": 12149 },
+    "D2-008": { "box": 1, "streak": 1, "lapses": 0, "seen": 1, "correct": 1, "lastSeen": 1781512152709, "nextDue": 1781598552709, "lastMs": 12114 }
+  },
+  "stats": {
+    "totalAnswered": 80,
+    "totalCorrect": 65,
+    "sessions": 1,
+    "lastStudyDay": "2026-06-15",
+    "streakDays": 1,
+    "studySeconds": 937
+  },
+  "mocks": [],
+  "settings": {
+    "dailyGoal": 30,
+    "examDate": null,
+    "confettiOnPass": true
+  },
+  "sync": {
+    "lastBackup": 1781512172114,
+    "lastImport": null
+  }
+};

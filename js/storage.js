@@ -59,6 +59,26 @@
     } catch (e) {
       console.warn("State load failed, starting fresh:", e);
     }
+    // No saved state in this browser yet. If a seed snapshot is present
+    // (e.g. imported first-session progress), start from it; otherwise fresh.
+    if (window.SEED_STATE) {
+      try {
+        var base = freshState();
+        var seed = JSON.parse(JSON.stringify(window.SEED_STATE));
+        state = Object.assign(base, seed);
+        state.schema = SCHEMA_VERSION;
+        state.cards = seed.cards || {};
+        state.mocks = seed.mocks || [];
+        state.stats = Object.assign(base.stats, seed.stats || {});
+        state.settings = Object.assign(base.settings, seed.settings || {});
+        state.sync = Object.assign(base.sync, seed.sync || {});
+        state.seededFrom = seed.deviceId || true;
+        saveNow();
+        return state;
+      } catch (e2) {
+        console.warn("Seed load failed, starting fresh:", e2);
+      }
+    }
     state = freshState();
     save();
     return state;
